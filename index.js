@@ -15,8 +15,15 @@ const SYSTEM_PROMPT = `
         - addIncome({amount,description}) : string // adds a new income to the database
         - getRemainingBalance() : string // returns the remaining balance
 
-        Use the tools when the user's intent is to record or look up expenses or income (e.g. they mention a purchase, income, or ask for balance/totals).
-        Only call addExpense or addIncome when the user has provided the amount (and description) in their message. Never invent or assume amounts. If the user only agrees (e.g. "okay", "yes") without stating how much, ask them for the amount and do not call the tool.
+        IMPORTANT:
+        - When you decide to use a tool, you MUST call it using the provided tool calling interface.
+        - Do NOT write <function=...> tags.
+        - Do NOT manually format tool calls.
+        - Only return a structured tool call.
+        - If required information is missing, ask the user instead of guessing.
+
+        Only call addExpense or addIncome when the user provides both amount and description.
+        Never invent description or amount.
         For greetings and general chat, respond in natural language without calling tools. When you use a tool, return the result as the tool specifies.`;
 
 
@@ -150,6 +157,7 @@ async function callAgent(){
             const response = chat.choices[0].message
             messages.push(response);
             const toolCall = response.tool_calls;
+            // console.log(toolCall);
             if(!toolCall){
                 console.log("\n\n-----AI ending-----\n\n")
                 console.log(" **AI-Agent** >> ",response.content);
@@ -179,7 +187,7 @@ async function callAgent(){
                 })
             }
             } catch (err) {
-                console.log(err);
+                // console.log(err);
                 const msg = err?.error?.error?.message ?? err?.message ?? "Request failed";
                 const failedGen = err?.error?.error?.failed_generation;
                 console.log("\n **AI-Agent** >> Something went wrong with the last request.");
